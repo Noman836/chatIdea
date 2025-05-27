@@ -1,8 +1,11 @@
 import express from 'express';
 import cors from 'cors';
+
 import routeEmail from './routes/email.routes';
 import walletRoute from './routes/wallet.routes';
 import profileRoute from './routes/profile.routes';
+import passwordRoute from './routes/password.routes';
+
 import cloudinary from 'cloudinary'
 import bodyParser from 'body-parser';
 import { rateLimiter } from './middleware/rate-limiter';
@@ -31,6 +34,7 @@ cloudinary.v2.config({
 app.use('/api/user', routeEmail);
 app.use('/api/wallet', walletRoute);
 app.use('/api/profile', profileRoute);
+app.use('/api/password', passwordRoute);
 
 const PORT = process.env.PORT || 5000;
 app.listen(PORT, () => {

@@ -3,6 +3,7 @@ import { emailVerification } from '../controllers/emailVerify.controller';
 import { resendOtp, verifyOtp } from '../controllers/verifyEmail';
 import { authMiddleware } from '../middleware/authMiddleware';
 import { loginUser } from '../controllers/login.controller';
+
 const router = Router();
 
 router.post('/email', async (req, res) => {

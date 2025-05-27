@@ -48,18 +48,18 @@ async function sendEmail({
   }
 }
 
-// const sendResetEmail = async (email: string, otp: string) => {
-//   await sendEmail({
-//     from: `"Support" <${process.env.SMTP_USER}>`,
-//     to: email,
-//     subject: 'Password Reset',
-//     html: `
-//       <p>You requested to reset your password. Use the following OTP code to proceed:</p>
-//       <h2>${otp}</h2>
-//       <p>This OTP is valid for 10 minutes.</p>
-//     `,
-//   });
-// };
+const sendResetEmail = async (email: string,resetToken:string, otp: string) => {
+  await sendEmail({
+    from: `"Support" <${process.env.SMTP_USER}>`,
+    to: email,
+    subject: 'Password Reset',
+    html: `
+      <p>You requested to reset your password. Use the following OTP code to proceed:</p>
+      <h2>${otp}</h2>
+      <p>This OTP is valid for 10 minutes.</p>
+    `,
+  });
+};
 
 
-export { sendEmail };
+export { sendEmail,sendResetEmail};
