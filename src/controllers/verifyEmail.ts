@@ -24,10 +24,10 @@ export const verifyOtp = async (req: Request, res: Response) => {
         otpVerified: true,
       },
     });
-     const token = generateToken(
-      user.email || user.email || '',
-        user.id || '',
-    );
+      const token = generateToken({
+      email: user.email || '',
+      id: user.id || '',
+    });
     res.status(200).json({ message: "Email verified successfully", newUser,token });
 
   } catch (error) {
