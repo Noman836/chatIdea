@@ -29,7 +29,54 @@ model User {
   otpLastSentAt DateTime? 
   resetToken     String?
   resetTokenExp  DateTime?
+    // Relations
+  messages      ChatMessage[]
+ // MUST match relation names in Chat model
+  senderChats     Chat[] @relation("senderChats")
+  receiverChats   Chat[] @relation("receiverChats")
 }
+
+model Chat {
+  id          String   @id @default(uuid())
+  senderId    String
+  receiverId  String
+  createdAt   DateTime @default(now())
+  updatedAt   DateTime @updatedAt
+
+  sender      User     @relation("senderChats", fields: [senderId], references: [id])
+  receiver    User     @relation("receiverChats", fields: [receiverId], references: [id])
+
+  messages    ChatMessage[]
+
+  @@index([senderId, receiverId])
+  @@index([receiverId, senderId])
+  @@unique([senderId, receiverId])
+}
+
+
+model ChatMessage {
+  id           String      @id @default(uuid())      // Har message ka unique ID
+  chatId       String                             // Kis chat mein ye message hai
+  senderId     String                             // Kis user ne ye message bheja
+  messageType  MessageType                        // Message ka type (text, image, voice, etc.)
+  content      String?                            // Message ka asli content (text, url, etc.)
+  createdAt    DateTime    @default(now())        // Message kab bheja gaya
+  read         Boolean     @default(false)        // Kya message read ho chuka hai
+
+  // Relations
+  chat         Chat        @relation(fields: [chatId], references: [id])
+  sender       User        @relation(fields: [senderId], references: [id])
+}
+
+enum MessageType {
+  TEXT
+  IMAGE
+  VOICE
+  REQUEST
+  RECORDING
+  // Aap future mein aur types bhi add kar sakte hain
+}
+
 
 model Invitation {
   id        String   @id @default(uuid())

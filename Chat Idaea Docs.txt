@@ -1,0 +1,33 @@
+                                                 Chat Idea Timeline
+Create User (4 days)
+1. Email and verify email                                         
+2. Create Wallet Addres and Secure Wallet Address and confirm phrase
+3. Personal Info 
+
+Login User (2 day)
+1. create login api
+2. forgot password
+3. New password
+
+Home page (need to be discussed)
+1. display all users and groups
+2. users chat
+3. group chat
+4. add participants in groups
+5. Create Group api
+6. group chat api with voice
+
+Request (need to be discussed)
+1. Request Received 
+2. Request Sent 
+3. 	
+
+Display Profile (need to be discussed)
+
+1. display user details 
+2. display current balance details and recent groups
+3. Tokens
+4. Transactions History (Today date-wise)
+
+
+
