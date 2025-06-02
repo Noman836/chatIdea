@@ -1,21 +1,37 @@
+// sockets/initSocket.ts
 import { Server } from 'socket.io';
 import prisma from '../database/prismaClient';
+import { verifyToken } from '../utils/jwt';
 
 export const initSocket = (io: Server) => {
-  io.on('connection', (socket) => {
-    console.log('User connected:', socket.id);
+  io.use((socket, next) => {
+    const token = socket.handshake.auth.token;
 
-    // 1. Join chat room
+    if (!token) {
+      return next(new Error('Authentication error: Token missing'));
+    }
+
+    try {
+      const decoded = verifyToken(token);
+      socket.data.userId = decoded?.id; // assuming the token payload has "id"
+      next();
+    } catch (err) {
+      return next(new Error('Authentication error: Invalid token'));
+    }
+  });
+
+  io.on('connection', (socket) => {
+    console.log('User connected:', socket.data.userId);
+
     socket.on('join_chat', (chatId: string) => {
       socket.join(chatId);
-      console.log(`User joined chat room: ${chatId}`);
+      console.log(`User ${socket.data.userId} joined chat room: ${chatId}`);
     });
 
-    // 2. Get or create chat
-      socket.on('get_or_create_chat', async ({ senderId, receiverId }, callback) => {
-        if (!senderId || !receiverId || senderId === receiverId) {
-          return callback({ error: 'Invalid sender or receiver.' });
-        }
+    socket.on('get_or_create_chat', async ({ senderId, receiverId }, callback) => {
+      if (!senderId || !receiverId || senderId === receiverId) {
+        return callback({ error: 'Invalid sender or receiver.' });
+      }
 
       const receiver = await prisma.user.findUnique({ where: { id: receiverId } });
       if (!receiver) return callback({ error: 'Receiver not found.' });
@@ -37,13 +53,7 @@ export const initSocket = (io: Server) => {
         where: { chatId: chat.id },
         orderBy: { createdAt: 'asc' },
         include: {
-          sender: {
-            select: {
-              id: true,
-              username: true,
-              profilepic: true
-            }
-          }
+          sender: { select: { id: true, username: true, profilepic: true } }
         }
       });
 
@@ -54,23 +64,19 @@ export const initSocket = (io: Server) => {
       });
     });
 
-    // 3. Send message
     socket.on('send_message', async ({ chatId, content, messageType, senderId }) => {
       if (!chatId || !content || !messageType || !senderId) return;
 
       const message = await prisma.chatMessage.create({
         data: { chatId, senderId, content, messageType },
         include: {
-          sender: {
-            select: { id: true, username: true, profilepic: true }
-          }
+          sender: { select: { id: true, username: true, profilepic: true } }
         }
       });
 
       io.to(chatId).emit('new_message', message);
     });
 
-    // 4. Get messages
     socket.on('get_messages', async ({ chatId, userId }, callback) => {
       if (!chatId || !userId) return callback({ error: 'Missing chatId or userId' });
 
@@ -85,11 +91,7 @@ export const initSocket = (io: Server) => {
         orderBy: { createdAt: 'asc' },
         include: {
           sender: {
-            select: {
-              id: true,
-              username: true,
-              profilepic: true
-            }
+            select: { id: true, username: true, profilepic: true }
           }
         }
       });
@@ -97,7 +99,6 @@ export const initSocket = (io: Server) => {
       callback({ messages });
     });
 
-    // 5. Disconnect
     socket.on('disconnect', () => {
       console.log('User disconnected:', socket.id);
     });
