@@ -3,9 +3,9 @@ import dotenv from 'dotenv';
 import { JwtPayload } from 'jsonwebtoken';
 dotenv.config();
 
-export const generateToken = (user: { email: string; id: string }) => {
-  return jwt.sign({ email: user.email, id: user.id }, process.env.JWT_SECRET!, {
-    expiresIn: '1h',
+export const generateToken = (user: { email: string; id: string, username: string }) => {
+  return jwt.sign({ email: user.email,username: user.username, id: user.id }, process.env.JWT_SECRET!, {
+    expiresIn: '1d',
   });
 };
 // export const verifyToken = (token: string) => {

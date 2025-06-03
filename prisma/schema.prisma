@@ -34,18 +34,65 @@ model User {
  // MUST match relation names in Chat model
   senderChats     Chat[] @relation("senderChats")
   receiverChats   Chat[] @relation("receiverChats")
+  createdChats Chat[]   @relation("UserCreatedChats")
+  groupMemberships GroupMember[]
+  groupMessages    GroupMessage[]
+  createdGroups    Group[]       @relation("UserCreatedGroups") 
+  chatParticipants ChatParticipant[] 
+}
+
+model Group {
+  id          String        @id @default(uuid())
+  name        String
+  description String?
+  createdAt   DateTime      @default(now())
+  createdBy   String
+
+  creator     User          @relation("UserCreatedGroups", fields: [createdBy], references: [id]) // ✅ Update relation name
+  members     GroupMember[]
+  messages    GroupMessage[]
+}
+
+model GroupMember {
+  id        String   @id @default(uuid())
+  groupId   String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  group     Group    @relation(fields: [groupId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([groupId, userId]) // 👈 Prevents duplicate user in the same group
+}
+
+model GroupMessage {
+  id           String      @id @default(uuid())
+  groupId      String
+  senderId     String
+  messageType  MessageType
+  content      String?
+  createdAt    DateTime    @default(now())
+  readBy       String[]    // You can use this array to track read status (or a separate model)
+
+  group        Group       @relation(fields: [groupId], references: [id])
+  sender       User        @relation(fields: [senderId], references: [id])
 }
 
 model Chat {
   id          String   @id @default(uuid())
-  senderId    String
-  receiverId  String
+  isGroup       Boolean            @default(false)
+  name          String?
+  createdById   String? 
+  createdBy   User?     @relation("UserCreatedChats", fields: [createdById], references: [id])
+  senderId    String?
+  receiverId  String?
   createdAt   DateTime @default(now())
   updatedAt   DateTime @updatedAt
+  groupImage    String?  
 
-  sender      User     @relation("senderChats", fields: [senderId], references: [id])
-  receiver    User     @relation("receiverChats", fields: [receiverId], references: [id])
-
+  sender      User?     @relation("senderChats", fields: [senderId], references: [id])
+  receiver    User?     @relation("receiverChats", fields: [receiverId], references: [id])
+  participants  ChatParticipant[]
   messages    ChatMessage[]
 
   @@index([senderId, receiverId])
@@ -53,6 +100,17 @@ model Chat {
   @@unique([senderId, receiverId])
 }
 
+model ChatParticipant {
+  id        String   @id @default(uuid())
+  chatId    String
+  userId    String
+  joinedAt  DateTime @default(now())
+
+  chat      Chat     @relation(fields: [chatId], references: [id])
+  user      User     @relation(fields: [userId], references: [id])
+
+  @@unique([chatId, userId])
+}
 
 model ChatMessage {
   id           String      @id @default(uuid())      // Har message ka unique ID

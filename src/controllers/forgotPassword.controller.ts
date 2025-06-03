@@ -24,6 +24,7 @@ export const forgotPassword = async (req: Request, res: Response) => {
     const resetToken = generateToken({
       email: user.email,
       id: user.id,
+      username: user.username || '',
     });
 
     const otp = generateOtp();

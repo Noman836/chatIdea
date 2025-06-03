@@ -27,6 +27,7 @@ export const verifyOtp = async (req: Request, res: Response) => {
       const token = generateToken({
       email: user.email || '',
       id: user.id || '',
+      username: user.username || '',
     });
     res.status(200).json({ message: "Email verified successfully", newUser,token });
 
